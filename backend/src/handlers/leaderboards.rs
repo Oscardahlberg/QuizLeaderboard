@@ -70,11 +70,13 @@ pub async fn latest_weekly_leaderboard(
     State(pool): State<PgPool>,
     ) -> Result<Json<Vec<LatestWeeklyLeaderboard>>> {
     let teams = sqlx::query_as::<_, LatestWeeklyLeaderboard>(
-        r#"SELECT rank, name, team_id, points, year, week
+        r#"SELECT rank, name, team_id, points, year_points, year, week
         FROM weekly_leaderboard
-        WHERE week = (
-            SELECT MAX(week)
+        WHERE (year, week) = (
+            SELECT year, week
             FROM weekly_leaderboard
+            ORDER BY year DESC, week DESC
+            LIMIT 1
         )
         ORDER BY rank
         "#,
@@ -103,13 +105,14 @@ pub async fn update_weekly_leaderboard(
         sqlx::query(
             r#"
             INSERT INTO weekly_leaderboard
-            (team_id, name, year, week, rank, points)
+            (team_id, name, year, week, rank, points, year_points)
             VALUES
-            ($1, $2, $3, $4, $5, $6)
+            ($1, $2, $3, $4, $5, $6, $7)
             ON CONFLICT (team_id, year, week)
             DO UPDATE SET
             rank = EXCLUDED.rank,
             points = EXCLUDED.points,
+            year_points = EXCLUDED.year_points,
             name = EXCLUDED.name
         "#
         )
@@ -118,6 +121,7 @@ pub async fn update_weekly_leaderboard(
         .bind(year)
         .bind(week)
         .bind(rank)
+        .bind(team.points)
         .bind(points(rank))
         .execute(pool)
         .await?;
@@ -153,7 +157,7 @@ pub async fn update_yearly_leaderboard(
         SELECT
             team_id,
             name,
-            SUM(points)::int as year_points
+            SUM(year_points)::int as year_points
         FROM weekly_leaderboard
         WHERE year = $1
         GROUP BY team_id, name

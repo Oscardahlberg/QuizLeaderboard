@@ -45,9 +45,6 @@ function LeaderboardsPage() {
             value={year}
             onChange={(event) => setYear(Number(event.target.value))}
           />
-          <button type="button" onClick={loadLeaderboards}>
-            Refresh
-          </button>
         </div>
       </section>
 
@@ -63,6 +60,7 @@ function LeaderboardsPage() {
             title={`Yearly Leaderboard (${latestYearly.year})`}
             rows={latestYearly.rows}
             pointsField="year_points"
+            scoreField=""
           />
           <LeaderboardTable
             title={
@@ -72,6 +70,7 @@ function LeaderboardsPage() {
             }
             rows={latestWeekly.rows}
             pointsField="points"
+            scoreField="year_points"
           />
         </>
       )}

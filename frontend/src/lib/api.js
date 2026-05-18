@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase } from "./supabase";
 
 const API_BASE_URL = (
     import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api"
@@ -12,7 +12,9 @@ async function request(path, options = {}) {
 
     // Add authorization token if user is logged in
     try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+            data: { session },
+        } = await supabase.auth.getSession();
         if (session?.access_token) {
             headers["Authorization"] = `Bearer ${session.access_token}`;
         }
@@ -60,8 +62,6 @@ export async function getWeeklyLeaderboard(week, year) {
 export async function getLatestYearlyLeaderboard() {
     const rows = await request(`/latest/year`);
     let year = rows?.[0]?.year ?? null;
-    console.log(rows);
-
     return { year, rows };
 }
 
@@ -69,7 +69,6 @@ export async function getLatestWeeklyLeaderboard() {
     const rows = await request(`/latest/week`);
     let year = rows?.[0]?.year ?? null;
     let week = rows?.[0]?.week ?? null;
-
     return { year, week, rows };
 }
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { createOrUpdateTeam } from '../lib/api';
+import { createOrUpdateTeam, getWeeklyLeaderboard } from '../lib/api';
 import { supabase } from '../lib/supabase';
 
 function TeamsPage() {
@@ -12,6 +12,7 @@ function TeamsPage() {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [teams, setTeams] = useState([]);
+  const [latestDate, setLatestDate] = useState({"week": 0, "year": 0});
 
   // Check if user is authenticated on mount
   useEffect(() => {
@@ -83,19 +84,34 @@ function TeamsPage() {
       return;
     }
 
+    const weekInt = parseInt(week)
+    const yearInt = parseInt(year)
+    
+    /*
+    console.log(weekInt)
+    console.log(yearInt)
+    if(weekInt != latestDate.week && yearInt != latestDate.year) {
+      setLatestDate({
+          week: weekInt,
+          year: yearInt,
+      })
+      console.log(latestDate)
+      setTeams(getWeeklyLeaderboard(weekInt, yearInt))
+      console.log("heyyyy")
+      console.log(teams)
+    }*/
+
     try {
       const payload = {
-        week: parseInt(week),
-        year: parseInt(year),
+        week: weekInt,
+        year: yearInt,
         name: teamName.trim(),
         points: parseInt(teamPoints),
       };
 
       const result = await createOrUpdateTeam(payload);
       setSuccessMessage(`Team "${teamName}" added successfully!`);
-      
-      // Add to local list
-      setTeams([...teams, result]);
+
       
       // Reset form
       setTeamName('');
@@ -225,23 +241,21 @@ function TeamsPage() {
             <table className="teams-table">
               <thead>
                 <tr>
+                  <th>Rank</th>
                   <th>Team Name</th>
                   <th>Points</th>
-                  <th>Week</th>
-                  <th>Year</th>
+                  <th>Score</th>
                 </tr>
               </thead>
               <tbody>
-                {teams
-                  .filter((t) => t.week === parseInt(week) && t.year === parseInt(year))
-                  .map((team, index) => (
-                    <tr key={index}>
-                      <td>{team.name}</td>
-                      <td>{team.points}</td>
-                      <td>{team.week}</td>
-                      <td>{team.year}</td>
+                {/*teams?.map((row) => (
+                    <tr key={row.team_id}>
+                      <td>{row.rank}</td>
+                      <td>{row.name}</td>
+                      <td>{row.points}</td>
+                      <td>{row.year_points}</td>
                     </tr>
-                  ))}
+                ))*/}
               </tbody>
             </table>
           )}

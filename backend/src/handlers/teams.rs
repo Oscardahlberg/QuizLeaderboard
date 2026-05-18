@@ -25,7 +25,9 @@ pub async fn get_teams(
         r#"SELECT team_id, name, points
            FROM team_weekly_points
            WHERE year = $1
-           AND week = $2"#,
+           AND week = $2
+           ORDER BY points DESC
+           "#,
     )
     .bind(year)
     .bind(week)

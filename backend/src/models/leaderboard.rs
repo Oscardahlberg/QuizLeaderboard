@@ -23,6 +23,7 @@ pub struct LatestWeeklyLeaderboard {
     pub team_id: Uuid,
     pub name: String,
     pub points: i32,
+    pub year_points: i32,
     pub year: i32,
     pub week: i32,
 }

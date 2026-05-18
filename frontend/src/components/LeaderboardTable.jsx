@@ -1,4 +1,4 @@
-function LeaderboardTable({ title, rows, pointsField }) {
+function LeaderboardTable({ title, rows, pointsField, scoreField, }) {
   return (
     <section className="card">
       <h2>{title}</h2>
@@ -12,6 +12,7 @@ function LeaderboardTable({ title, rows, pointsField }) {
                 <th>Rank</th>
                 <th>Team</th>
                 <th>Points</th>
+                { scoreField && <th>Score</th> }
               </tr>
             </thead>
             <tbody>
@@ -20,6 +21,7 @@ function LeaderboardTable({ title, rows, pointsField }) {
                   <td>{row.rank}</td>
                   <td>{row.name}</td>
                   <td>{row[pointsField]}</td>
+                  { scoreField && <th>{row[scoreField]}</th> }
                 </tr>
               ))}
             </tbody>

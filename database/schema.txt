@@ -32,6 +32,7 @@ create table public.weekly_leaderboard (
     rank integer not null check (rank between 1 and 10) default 10,
     created_at timestamptz not null default now(),
     points integer not null default 0,
+    year_points integer not null default 0,
 
     constraint unique_team_weekly_leaderboard unique (team_id, year, week),
     constraint unique_rank_per_week unique (rank, year, week)
