@@ -1,14 +1,28 @@
+import { supabase } from './supabase';
+
 const API_BASE_URL = (
     import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api"
 ).replace(/\/$/, "");
 
 async function request(path, options = {}) {
+    let headers = {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+    };
+
+    // Add authorization token if user is logged in
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+            headers["Authorization"] = `Bearer ${session.access_token}`;
+        }
+    } catch (err) {
+        console.warn("Failed to get Supabase session:", err);
+    }
+
     const response = await fetch(`${API_BASE_URL}${path}`, {
         ...options,
-        headers: {
-            ...(options.headers || {}),
-            "Content-Type": "application/json",
-        },
+        headers,
     });
 
     if (!response.ok) {
