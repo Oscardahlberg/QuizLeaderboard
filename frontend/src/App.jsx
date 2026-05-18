@@ -1,6 +1,7 @@
 import { Navigate, NavLink, Route, Routes } from 'react-router-dom';
 import LeaderboardsPage from './pages/LeaderboardsPage';
 import AdminPage from './pages/AdminPage';
+import TeamsPage from './pages/TeamsPage';
 
 function App() {
   return (
@@ -16,6 +17,12 @@ function App() {
             Leaderboards
           </NavLink>
           <NavLink
+            to="/teams"
+            className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+          >
+            Teams
+          </NavLink>
+          <NavLink
             to="/admin"
             className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
           >
@@ -27,6 +34,7 @@ function App() {
       <main className="page-content">
         <Routes>
           <Route path="/" element={<LeaderboardsPage />} />
+          <Route path="/teams" element={<TeamsPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
