@@ -1,21 +1,22 @@
-create extension if not exists "uuid-ossp";
+create extension if not exists pgcrypto;
 
 create table public.admin_users (
-    id uuid primary key default uuid_generate_v4(),
+    id uuid primary key default gen_random_uuid(),
     email text unique not null,
     password_hash text not null,
     created_at timestamptz not null default now()
 );
 
 create table public.teams (
-    id uuid primary key default uuid_generate_v4(),
+    id uuid primary key default gen_random_uuid(),
     name text unique not null,
     created_at timestamptz not null default now()
 );
 
 create table public.team_weekly_points (
-    id uuid primary key default uuid_generate_v4(),
+    id uuid primary key default gen_random_uuid(),
     team_id uuid not null references public.teams(id) on delete cascade,
+    name text not null,
     year integer not null,
     week integer not null check (week between 1 and 53),
     points integer not null default 0,
@@ -24,5 +25,29 @@ create table public.team_weekly_points (
     constraint unique_team_week unique (team_id, year, week)
 );
 
-create index idx_team_week_lookup
-on public.team_weekly_points(team_id, year, week);
+create table public.weekly_leaderboard (
+    id uuid primary key default gen_random_uuid(),
+    team_id uuid not null references public.teams(id) on delete cascade,
+    name text not null,
+    year integer not null,
+    week integer not null check (week between 1 and 53),
+    rank integer not null check (rank between 1 and 10) default 10,
+    created_at timestamptz not null default now(),
+    points integer not null default 0,
+
+    constraint unique_team_weekly_leaderboard unique (team_id, year, week),
+    constraint unique_rank_per_week unique (rank, year, week)
+);
+
+create table public.yearly_leaderboard (
+    id uuid primary key default gen_random_uuid(),
+    team_id uuid not null references public.teams(id) on delete cascade,
+    name text not null,
+    year integer not null,
+    rank integer not null check (rank between 1 and 15) default 10,
+    created_at timestamptz not null default now(),
+    year_points integer not null default 0,
+
+    constraint unique_team_yearly_leaderboard unique (team_id, year),
+    constraint unique_rank_per_year unique (rank, year)
+);
