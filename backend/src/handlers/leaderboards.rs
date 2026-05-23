@@ -103,10 +103,10 @@ pub async fn update_weekly_leaderboard(
     )
     .bind(year)
     .bind(week)
-    .execute(&mut **tx)
+    .execute(&mut *tx)
     .await?;
 
-    let teams = get_teams(&mut **tx, year, week).await?;
+    let teams = get_teams(&mut *tx, year, week).await?;
     let mut rank = 1;
 
     for team in teams {
@@ -131,7 +131,7 @@ pub async fn update_weekly_leaderboard(
         .bind(rank)
         .bind(team.points)
         .bind(points(rank))
-        .execute(&mut **tx)
+        .execute(&mut *tx)
         .await?;
 
         rank += 1;
@@ -155,7 +155,7 @@ pub async fn update_yearly_leaderboard(
         "#
     )
     .bind(year)
-    .execute(&mut **tx)
+    .execute(&mut *tx)
     .await?;
 
     // get summed yearly points from weekly leaderboard
@@ -173,7 +173,7 @@ pub async fn update_yearly_leaderboard(
         "#,
         year
     )
-    .fetch_all(&mut **tx)
+    .fetch_all(&mut *tx)
     .await?;
 
     // insert ranked yearly leaderboard
@@ -199,7 +199,7 @@ pub async fn update_yearly_leaderboard(
         .bind(year)
         .bind(rank)
         .bind(row.year_points)
-        .execute(&mut **tx)
+        .execute(&mut *tx)
         .await?;
     }
 
