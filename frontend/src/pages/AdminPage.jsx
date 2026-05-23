@@ -82,7 +82,6 @@ function AdminPage() {
         <button onClick={handleLogout} className="logout-btn">
           Logout
         </button>
-        {/* Add your admin content here */}
       </div>
     );
   }

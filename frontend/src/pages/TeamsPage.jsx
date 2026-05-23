@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { createOrUpdateTeam, getWeeklyLeaderboard } from '../lib/api';
-import { supabase } from '../lib/supabase';
+import useAuthUser from '../hooks/useAuthUser';
 
 function TeamsPage() {
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [week, setWeek] = useState(getCurrentWeek());
   const [year, setYear] = useState(new Date().getFullYear());
@@ -12,30 +11,21 @@ function TeamsPage() {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [teams, setTeams] = useState([]);
-  const [latestDate, setLatestDate] = useState({"week": 0, "year": 0});
+  const [addedDate, setAddedDate] = useState({"week": 0, "year": 0})
+  const [yearRange, setYearRange] = useState(getYearRange())
 
-  // Check if user is authenticated on mount
-  useEffect(() => {
-    checkUser();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user || null);
-      }
-    );
+  const user = useAuthUser();
 
-    return () => {
-      subscription?.unsubscribe();
-    };
-  }, []);
+  function getYearRange() {
+      const currYear = new Date().getFullYear();
+      return [
+          currYear - 2,
+          currYear - 1,
+          currYear,
+          currYear + 1
+      ]
+  }
 
-  const checkUser = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
-    } catch (err) {
-      console.error('Error checking user:', err);
-    }
-  };
 
   // Get current ISO week number
   function getCurrentWeek() {
@@ -84,34 +74,22 @@ function TeamsPage() {
       return;
     }
 
-    const weekInt = parseInt(week)
-    const yearInt = parseInt(year)
-    
-    /*
-    console.log(weekInt)
-    console.log(yearInt)
-    if(weekInt != latestDate.week && yearInt != latestDate.year) {
-      setLatestDate({
-          week: weekInt,
-          year: yearInt,
-      })
-      console.log(latestDate)
-      setTeams(getWeeklyLeaderboard(weekInt, yearInt))
-      console.log("heyyyy")
-      console.log(teams)
-    }*/
-
     try {
       const payload = {
-        week: weekInt,
-        year: yearInt,
+        week: parseInt(week),
+        year: parseInt(year),
         name: teamName.trim(),
         points: parseInt(teamPoints),
       };
 
       const result = await createOrUpdateTeam(payload);
       setSuccessMessage(`Team "${teamName}" added successfully!`);
+      setTeams(result.current)
 
+      setAddedDate({
+          year: parseInt(year),
+          week: parseInt(week),
+      })
       
       // Reset form
       setTeamName('');
@@ -148,30 +126,20 @@ function TeamsPage() {
 
   return (
     <div className="teams-page">
-      <div className="teams-header">
-        <div>
-          <h1>Teams Management</h1>
-          <p className="user-info">Logged in as: {user.email}</p>
-        </div>
-        <button onClick={handleLogout} className="logout-btn">
-          Logout
-        </button>
-      </div>
-
       <div className="teams-container">
         <div className="add-team-form">
           <h2>Add Team Entry</h2>
           
           <div className="date-selectors">
             <div className="date-group">
-              <label htmlFor="year">Year:</label>
+              <label htmlFor="year"></label>
               <select
                 id="year"
                 value={year}
                 onChange={(e) => setYear(e.target.value)}
                 disabled={loading}
               >
-                {[2024, 2025, 2026, 2027].map((y) => (
+                {yearRange.map((y) => (
                   <option key={y} value={y}>
                     {y}
                   </option>
@@ -180,7 +148,7 @@ function TeamsPage() {
             </div>
 
             <div className="date-group">
-              <label htmlFor="week">Week:</label>
+              <label htmlFor="week"></label>
               <select
                 id="week"
                 value={week}
@@ -196,7 +164,7 @@ function TeamsPage() {
             </div>
           </div>
 
-          <form onSubmit={handleAddTeam}>
+          <form className="add-team-form-2" onSubmit={handleAddTeam}>
             <div className="form-group">
               <label htmlFor="teamName">Team Name:</label>
               <input
@@ -234,30 +202,32 @@ function TeamsPage() {
         </div>
 
         <div className="teams-list">
-          <h2>Teams for Week {week}, {year}</h2>
           {teams.length === 0 ? (
-            <p className="empty-message">No teams added yet for this week.</p>
+            <h3 className="is-leaderboard">Adding a user will show the leaderboard</h3>
           ) : (
+            <>
+            <h2 className="is-leaderboard">Teams for Week {addedDate.week}, {addedDate.year}</h2>
             <table className="teams-table">
               <thead>
                 <tr>
                   <th>Rank</th>
                   <th>Team Name</th>
                   <th>Points</th>
-                  <th>Score</th>
+                  <th>Championship Score</th>
                 </tr>
               </thead>
               <tbody>
-                {/*teams?.map((row) => (
+                {teams?.map((row) => (
                     <tr key={row.team_id}>
                       <td>{row.rank}</td>
                       <td>{row.name}</td>
                       <td>{row.points}</td>
                       <td>{row.year_points}</td>
                     </tr>
-                ))*/}
+                ))}
               </tbody>
             </table>
+            </>
           )}
         </div>
       </div>

@@ -4,11 +4,11 @@ use axum::{
 };
 
 use sqlx::PgPool;
+use sqlx::{Postgres, Transaction};
 
 use crate::{
     error::{Result},
-    models::leaderboard::{Leaderboard, YearLeaderboard,
-        LatestYearlyLeaderboard, LatestWeeklyLeaderboard},
+    models::leaderboard::{WeekLeaderboard, YearLeaderboard, AllYearLeaderboard},
     handlers::teams::{get_teams},
 };
 
@@ -18,7 +18,7 @@ pub async fn yearly_leaderboard(
     Path(year): Path<i32>,
     ) -> Result<Json<Vec<YearLeaderboard>>> {
     let teams = sqlx::query_as::<_, YearLeaderboard>(
-        r#"SELECT rank, name, team_id, year_points
+        r#"SELECT rank, name, team_id, year_points, year
         FROM yearly_leaderboard
 WHERE year = $1
         ORDER BY rank
@@ -32,8 +32,8 @@ WHERE year = $1
 
 pub async fn latest_yearly_leaderboard(
     State(pool): State<PgPool>,
-    ) -> Result<Json<Vec<LatestYearlyLeaderboard>>> {
-    let teams = sqlx::query_as::<_, LatestYearlyLeaderboard>(
+    ) -> Result<Json<Vec<YearLeaderboard>>> {
+    let teams = sqlx::query_as::<_, YearLeaderboard>(
         r#"SELECT rank, name, team_id, year_points, year
         FROM yearly_leaderboard
         WHERE year = (
@@ -51,9 +51,16 @@ pub async fn latest_yearly_leaderboard(
 pub async fn weekly_leaderboard(
     State(pool): State<PgPool>,
     Path((week, year)): Path<(i32, i32)>,
-    ) -> Result<Json<Vec<Leaderboard>>> {
-    let teams = sqlx::query_as::<_, Leaderboard>(
-        r#"SELECT rank, name, team_id, points
+    ) -> Result<Json<Vec<WeekLeaderboard>>> {
+    let teams = get_weekly_leaderboard(&pool, year, week).await?;
+    Ok(Json(teams))
+}
+
+pub async fn get_weekly_leaderboard(
+    pool: &PgPool, year: i32, week: i32,
+    ) -> Result<Vec<WeekLeaderboard>> {
+    let teams = sqlx::query_as::<_, WeekLeaderboard>(
+        r#"SELECT rank, name, team_id, points, year_points, week, year
         FROM weekly_leaderboard
         WHERE year = $1 AND week = $2
         ORDER BY rank
@@ -61,15 +68,15 @@ pub async fn weekly_leaderboard(
     )
     .bind(year)
     .bind(week)
-    .fetch_all(&pool)
+    .fetch_all(pool)
     .await?;
-    Ok(Json(teams))
+    Ok(teams)
 }
 
 pub async fn latest_weekly_leaderboard(
     State(pool): State<PgPool>,
-    ) -> Result<Json<Vec<LatestWeeklyLeaderboard>>> {
-    let teams = sqlx::query_as::<_, LatestWeeklyLeaderboard>(
+    ) -> Result<Json<Vec<WeekLeaderboard>>> {
+    let teams = sqlx::query_as::<_, WeekLeaderboard>(
         r#"SELECT rank, name, team_id, points, year_points, year, week
         FROM weekly_leaderboard
         WHERE (year, week) = (
@@ -87,7 +94,8 @@ pub async fn latest_weekly_leaderboard(
 }
 
 pub async fn update_weekly_leaderboard(
-    pool: &PgPool, year: i32, week: i32
+    tx: &mut Transaction<'_, Postgres>,
+    year: i32, week: i32
     ) -> Result<()> {
 
     sqlx::query(
@@ -95,10 +103,10 @@ pub async fn update_weekly_leaderboard(
     )
     .bind(year)
     .bind(week)
-    .execute(pool)
+    .execute(&mut tx)
     .await?;
 
-    let teams = get_teams(pool, year, week).await?;
+    let teams = get_teams(&mut tx, year, week).await?;
     let mut rank = 1;
 
     for team in teams {
@@ -123,7 +131,7 @@ pub async fn update_weekly_leaderboard(
         .bind(rank)
         .bind(team.points)
         .bind(points(rank))
-        .execute(pool)
+        .execute(&mut tx)
         .await?;
 
         rank += 1;
@@ -135,10 +143,9 @@ pub async fn update_weekly_leaderboard(
 }
 
 pub async fn update_yearly_leaderboard(
-    pool: &PgPool,
+    tx: &mut Transaction<'_, Postgres>,
     year: i32,
     ) -> Result<()> {
-    let tx = pool.begin().await?;
 
     // remove old yearly leaderboard for this year
     sqlx::query(
@@ -148,7 +155,7 @@ pub async fn update_yearly_leaderboard(
         "#
     )
     .bind(year)
-    .execute(pool)
+    .execute(&mut tx)
     .await?;
 
     // get summed yearly points from weekly leaderboard
@@ -166,7 +173,7 @@ pub async fn update_yearly_leaderboard(
         "#,
         year
     )
-    .fetch_all(pool)
+    .fetch_all(&mut tx)
     .await?;
 
     // insert ranked yearly leaderboard
@@ -192,12 +199,26 @@ pub async fn update_yearly_leaderboard(
         .bind(year)
         .bind(rank)
         .bind(row.year_points)
-        .execute(pool)
+        .execute(&mut tx)
         .await?;
     }
 
     tx.commit().await?;
     Ok(())
+}
+
+pub async fn all_yearly_leaderboard(
+    State(pool): State<PgPool>,
+    ) -> Result<Json<Vec<AllYearLeaderboard>>> {
+    let years = sqlx::query_as::<_, AllYearLeaderboard>(
+        r#"SELECT DISTINCT year
+        FROM yearly_leaderboard
+        ORDER BY year ASC
+        "#,
+    )
+    .fetch_all(&pool)
+    .await?;
+    Ok(Json(years))
 }
 
 fn points(place: i32) -> i32 {

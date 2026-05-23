@@ -20,3 +20,14 @@ pub struct CreateTeamRequest {
 pub struct GetTeamRequest {
     pub name: String,
 }
+
+#[derive(Debug, Deserialize, sqlx::FromRow)]
+pub struct WeekYear {
+    pub week: i32,
+    pub year: i32,
+}
+
+#[derive(Debug, Deserialize, sqlx::FromRow)]
+pub struct Year {
+    pub year: i32,
+}

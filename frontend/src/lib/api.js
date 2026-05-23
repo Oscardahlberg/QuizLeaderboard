@@ -51,6 +51,10 @@ function getIsoWeek(date) {
     return Math.ceil(((utcDate - yearStart) / 86400000 + 1) / 7);
 }
 
+export async function getAllYearlyLeaderboards() {
+    return request(`/all/year`);
+}
+
 export async function getYearlyLeaderboard(year) {
     return request(`/year/${year}`);
 }
@@ -76,5 +80,15 @@ export async function createOrUpdateTeam(payload) {
     return request("/teams", {
         method: "POST",
         body: JSON.stringify(payload),
+    });
+}
+
+export async function deleteTeam(payload) {
+    const nameSerialize = {
+        name: payload,
+    };
+    return request("/teams", {
+        method: "DELETE",
+        body: JSON.stringify(nameSerialize),
     });
 }

@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import LeaderboardTable from '../components/LeaderboardTable';
 import { getLatestWeeklyLeaderboard, getLatestYearlyLeaderboard } from '../lib/api';
+import { NavLink } from "react-router-dom";
 
 function LeaderboardsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [years, setYears] = useState({});
   const [latestYearly, setLatestYearly] = useState({ year: null, rows: []});
   const [latestWeekly, setLatestWeekly] = useState({ year: null, week: null, rows: [] });
-  const [year, setYear] = useState(new Date().getFullYear());
 
   const loadLeaderboards = useCallback(async () => {
     setIsLoading(true);
@@ -31,25 +32,21 @@ function LeaderboardsPage() {
     loadLeaderboards();
   }, [loadLeaderboards]);
 
+  const loadAllYearlyLeaderboards = useCallback(async () => {
+    try {
+      const allYears = await getAllYearlyLeaderboard();
+      setYears(allYears);
+      } catch(err) {
+          setError(err)
+      }
+    }, []);
+
+  useEffect(() => {
+    loadAllYearlyLeaderboards();
+  }, [loadAllYearlyLeaderboards]);
+
   return (
     <div className="page-stack">
-      <section className="card">
-        <h2>Leaderboards</h2>
-        <div className="filters">
-          <label htmlFor="year-input">Year</label>
-          <input
-            id="year-input"
-            type="number"
-            min="2000"
-            max="9999"
-            value={year}
-            onChange={(event) => setYear(Number(event.target.value))}
-          />
-        </div>
-      </section>
-
-      {error && <p className="error-text">{error}</p>}
-
       {isLoading ? (
         <section className="card">
           <p className="muted">Loading leaderboard data...</p>
@@ -62,6 +59,10 @@ function LeaderboardsPage() {
             pointsField="year_points"
             scoreField=""
           />
+            <NavLink id="to-all-yearly-leaderboards"
+            to="/all/years">
+            All yearly leaderboards
+            </NavLink>
           <LeaderboardTable
             title={
               latestWeekly.week

@@ -20,7 +20,8 @@ pub fn router(pool: PgPool) -> Router {
         .route("/year/:year", get(leaderboards::yearly_leaderboard))
         .route("/latest/year", get(leaderboards::latest_yearly_leaderboard))
         .route("/week/:week/:year", get(leaderboards::weekly_leaderboard))
-        .route("/latest/week", get(leaderboards::latest_weekly_leaderboard));
+        .route("/latest/week", get(leaderboards::latest_weekly_leaderboard))
+        .route("/all/year", get(leaderboards::all_yearly_leaderboard));
 
     Router::new()
         .merge(public_routes)

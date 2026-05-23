@@ -1,160 +1,289 @@
 :root {
-  color-scheme: dark;
-  font-family: Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-  background: #0f1115;
-  color: #e8edf6;
+    font-family: Inter, serif;
+    background: #0f1115;
+    color: white;
 }
 
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 body {
-  margin: 0;
-  min-height: 100vh;
-  background: #0f1115;
-  color: #e8edf6;
+    margin: 0;
+    min-height: 100vh;
+
+    background-image: url("/habitat_landscape_blur_dark.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+#title {
+    color: white;
+    text-align: center;
+}
+
+#leaderboard-title {
+    text-align: center;
+}
+
+#team-title {
+    text-align: center;
+}
+
+#to-all-yearly-leaderboards {
+    text-align: center;
+    font-style: italic;
+}
+#to-all-yearly-leaderboards:hover {
+    color: #3262a8;
 }
 
 a {
-  color: inherit;
+    text-decoration: none;
+    color: inherit;
 }
 
 .app-shell {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 1.25rem;
-}
-
-.top-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.top-nav h1 {
-  margin: 0;
-  font-size: 1.4rem;
-}
-
-.top-nav nav {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.nav-link {
-  padding: 0.45rem 0.75rem;
-  border-radius: 8px;
-  text-decoration: none;
-  border: 1px solid transparent;
-}
-
-.nav-link:hover {
-  border-color: #384257;
-}
-
-.nav-link.active {
-  background: #2a3346;
-  border-color: #4a5977;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 1.25rem;
 }
 
 .page-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .page-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .card {
-  background: #171b23;
-  border: 1px solid #2a3346;
-  border-radius: 12px;
-  padding: 1rem;
+    padding: 1rem;
 }
 
 .card h2,
 .card h3 {
-  margin-top: 0;
+    margin-top: 0;
 }
 
 .filters {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .table-wrap {
-  overflow-x: auto;
+    overflow-x: auto;
 }
 
 table {
-  width: 100%;
-  border-collapse: collapse;
+    width: 100%;
+    border-collapse: collapse;
 }
 
 th,
 td {
-  padding: 0.65rem 0.5rem;
-  border-bottom: 1px solid #293141;
-  text-align: left;
+    padding: 0.65rem 0.5rem;
+    border-bottom: 1px solid white;
+    text-align: left;
 }
 
 th {
-  font-weight: 600;
-  color: #b7c2d9;
+    font-weight: 600;
+    color: white;
 }
 
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.5rem;
-  max-width: 420px;
-}
-
-input,
-button {
-  border-radius: 8px;
-  border: 1px solid #3a455c;
-  background: #10151d;
-  color: #e8edf6;
-  padding: 0.6rem 0.75rem;
-}
-
-button {
-  cursor: pointer;
-}
-
-button:hover {
-  background: #1a2130;
-}
-
-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
+input {
+    border-radius: 8px;
+    border: 1px solid #3a455c;
+    background: #10151d;
+    color: white;
+    padding: 0.6rem 0.75rem;
 }
 
 .admin-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
 }
 
 .muted {
-  color: #a5afc3;
+    color: #a5afc3;
 }
 
 .error-text {
-  color: #ff8e8e;
+    color: #ff8e8e;
 }
 
 .success-text {
-  color: #8fe3aa;
+    color: #8fe3aa;
+}
+footer {
+    width: 100%;
+    padding: 12px 20px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 13px;
+}
+
+footer div {
+    display: flex;
+    gap: 14px;
+}
+
+.nav-link,
+#logout-button {
+    background: none;
+    border: none;
+    color: #888;
+    text-decoration: none;
+    cursor: pointer;
+    padding: 0;
+    font-size: inherit;
+    transition: color 0.2s ease;
+}
+
+.nav-link:hover,
+#logout-button:hover {
+    color: #ccc;
+}
+
+.nav-link.active {
+    color: white;
+}
+
+/* Admin TeamsPage.jsx */
+
+.teams-page {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 20px;
+}
+
+.add-team-form,
+.teams-list {
+    width: 100%;
+}
+
+.teams-container {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.add-team-form {
+    width: 100%;
+    max-width: 420px;
+    padding: 24px;
+    border-radius: 12px;
+    align-self: center;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(8px);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.add-team-form-2 {
+    width: 100%;
+    max-width: 420px;
+    border-radius: 12px;
+    align-self: center;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.add-team-form h2 {
+    align-self: center;
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.is-leaderboard {
+    text-align: center;
+}
+
+.date-selectors {
+    display: flex;
+    gap: 10px;
+}
+
+.date-group {
+    flex: 1;
+    display: flex;
+}
+
+select,
+input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    outline: none;
+}
+
+select option {
+    color: black;
+}
+
+select:focus,
+input:focus {
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+label {
+    display: none;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.submit-btn {
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background: #82ff80;
+    color: black;
+    font-weight: 500;
+}
+
+.submit-btn:hover {
+    background: #5bb05a;
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.error-message {
+    color: #ff6b6b;
+    font-size: 13px;
+}
+
+.success-message {
+    color: #51cf66;
+    font-size: 13px;
 }
