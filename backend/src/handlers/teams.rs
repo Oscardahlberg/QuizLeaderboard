@@ -119,14 +119,16 @@ pub async fn delete_team(
     State(pool): State<PgPool>,
     Json(req): Json<GetTeamRequest>,
 ) -> Result<StatusCode> {
+    let mut tx = pool.begin().await?;
 
+    // Get affected weeks/years within the transaction
     let affected_weeks = sqlx::query_as::<_, WeekYear>(
         "SELECT DISTINCT week, year
         FROM team_weekly_points
         WHERE name = $1"        
     )
     .bind(&req.name)
-    .fetch_all(&pool)
+    .fetch_all(&mut *tx)
     .await?;
 
     let affected_years = sqlx::query_as::<_, Year>(
@@ -135,20 +137,26 @@ pub async fn delete_team(
         WHERE name = $1"        
     )
     .bind(&req.name)
-    .fetch_all(&pool)
+    .fetch_all(&mut *tx)
     .await?;
 
+    // Delete the team within the transaction
     let result = sqlx::query(
         "DELETE FROM teams WHERE name = $1",
     )
     .bind(&req.name)
-    .execute(&pool)
+    .execute(&mut *tx)
     .await?;
 
     if result.rows_affected() == 0 {
+        tx.rollback().await?;
         return Err(AppError::NotFound(format!("Team '{}' not found", req.name)));
     }
 
+    // Commit the delete before updating leaderboards
+    tx.commit().await?;
+
+    // Now update leaderboards with the original pool
     for row in affected_weeks {
         update_weekly_leaderboard(&pool, row.year, row.week).await?;
     }
