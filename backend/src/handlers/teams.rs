@@ -35,7 +35,7 @@ pub async fn get_teams(
     )
     .bind(year)
     .bind(week)
-    .fetch_all(&mut *tx)
+    .fetch_all(&mut **tx)
     .await?;
     Ok(teams)
 }
@@ -77,10 +77,10 @@ pub async fn update_team(
     // Insert or update team_weekly_points
     sqlx::query(
         "INSERT INTO team_weekly_points (team_id, name, year, week, points) VALUES ($1, $2, $3, $4, $5)
-         ON CONFLICT (team_id, year, week) DO UPDATE SET points = $4",
+         ON CONFLICT (team_id, year, week) DO UPDATE SET points = $5",
     )
     .bind(team_id)
-    .bind(req.name)
+    .bind(req.name.clone())
     .bind(req.year)
     .bind(req.week)
     .bind(req.points)
@@ -92,6 +92,10 @@ pub async fn update_team(
     // UPDATES THE WHOLE YEARLY LEADERBOARD FOR THAT YEAR
     update_yearly_leaderboard(&mut tx, req.year).await?;
 
+    // Commit all changes atomically
+    tx.commit().await?;
+
+    // Now fetch the updated leaderboard after commit
     let team = get_weekly_leaderboard(&pool, req.year, req.week).await?;
 
     Ok((StatusCode::CREATED, Json(serde_json::json!({
@@ -130,27 +134,27 @@ let mut tx = pool.begin().await?;
 
     let affected_weeks = sqlx::query_as::<_, WeekYear>(
         "SELECT DISTINCT week, year
-        FROM team_weekly_points
-        WHERE name = $1"        
+         FROM team_weekly_points
+         WHERE name = $1"        
     )
     .bind(&req.name)
-    .fetch_all(&mut tx)
+    .fetch_all(&mut *tx)
     .await?;
 
     let affected_years = sqlx::query_as::<_, Year>(
         "SELECT DISTINCT year
-        FROM team_weekly_points
-        WHERE name = $1"        
+         FROM team_weekly_points
+         WHERE name = $1"        
     )
     .bind(&req.name)
-    .fetch_all(&mut tx)
+    .fetch_all(&mut *tx)
     .await?;
 
     let result = sqlx::query(
         "DELETE FROM teams WHERE name = $1",
     )
     .bind(&req.name)
-    .execute(&mut tx)
+    .execute(&mut *tx)
     .await?;
 
     if result.rows_affected() == 0 {
