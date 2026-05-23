@@ -4,7 +4,6 @@ use axum::{
 };
 
 use sqlx::PgPool;
-use sqlx::{Postgres, Transaction};
 
 use crate::{
     error::{Result},
@@ -94,8 +93,7 @@ pub async fn latest_weekly_leaderboard(
 }
 
 pub async fn update_weekly_leaderboard(
-    tx: &mut Transaction<'_, Postgres>,
-    year: i32, week: i32
+    pool: &PgPool, year: i32, week: i32
     ) -> Result<()> {
 
     sqlx::query(
@@ -103,10 +101,10 @@ pub async fn update_weekly_leaderboard(
     )
     .bind(year)
     .bind(week)
-    .execute(&mut *tx)
+    .execute(pool)
     .await?;
 
-    let teams = get_teams(&mut *tx, year, week).await?;
+    let teams = get_teams(pool, year, week).await?;
     let mut rank = 1;
 
     for team in teams {
@@ -131,7 +129,7 @@ pub async fn update_weekly_leaderboard(
         .bind(rank)
         .bind(team.points)
         .bind(points(rank))
-        .execute(&mut *tx)
+        .execute(pool)
         .await?;
 
         rank += 1;
@@ -143,9 +141,10 @@ pub async fn update_weekly_leaderboard(
 }
 
 pub async fn update_yearly_leaderboard(
-    tx: &mut Transaction<'_, Postgres>,
+    pool: &PgPool,
     year: i32,
     ) -> Result<()> {
+    let tx = pool.begin().await?;
 
     // remove old yearly leaderboard for this year
     sqlx::query(
@@ -155,7 +154,7 @@ pub async fn update_yearly_leaderboard(
         "#
     )
     .bind(year)
-    .execute(&mut *tx)
+    .execute(pool)
     .await?;
 
     // get summed yearly points from weekly leaderboard
@@ -173,7 +172,7 @@ pub async fn update_yearly_leaderboard(
         "#,
         year
     )
-    .fetch_all(&mut *tx)
+    .fetch_all(pool)
     .await?;
 
     // insert ranked yearly leaderboard
@@ -199,10 +198,11 @@ pub async fn update_yearly_leaderboard(
         .bind(year)
         .bind(rank)
         .bind(row.year_points)
-        .execute(&mut *tx)
+        .execute(pool)
         .await?;
     }
 
+    tx.commit().await?;
     Ok(())
 }
 

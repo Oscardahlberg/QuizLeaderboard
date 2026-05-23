@@ -4,7 +4,6 @@ use axum::{
     Json,
 };
 use sqlx::PgPool;
-use sqlx::{Postgres, Transaction};
 
 use crate::{
     error::{AppError, Result},
@@ -16,15 +15,12 @@ pub async fn list_teams(
     State(pool): State<PgPool>,
     Path((week, year)): Path<(i32, i32)>,
 ) -> Result<Json<Vec<TeamWithPoints>>> {
-    let mut tx = pool.begin().await?;
-    let teams = get_teams(&mut tx, year, week).await?;
-    tx.commit().await?;    
+    let teams = get_teams(&pool, year, week).await?;
     Ok(Json(teams))
 }
 
 pub async fn get_teams(
-    tx: &mut Transaction<'_, Postgres>,
-    year: i32, week: i32) -> Result<Vec<TeamWithPoints>> {
+    pool: &PgPool, year: i32, week: i32) -> Result<Vec<TeamWithPoints>> {
     let teams = sqlx::query_as::<_, TeamWithPoints>(
         r#"SELECT team_id, name, points
            FROM team_weekly_points
@@ -35,7 +31,7 @@ pub async fn get_teams(
     )
     .bind(year)
     .bind(week)
-    .fetch_all(&mut **tx)
+    .fetch_all(pool)
     .await?;
     Ok(teams)
 }
@@ -44,14 +40,12 @@ pub async fn update_team(
     State(pool): State<PgPool>,
     Json(req): Json<CreateTeamRequest>,
 ) -> Result<(StatusCode, Json<serde_json::Value>)> {
-    let mut tx = pool.begin().await?;
-
     // Check if team already exists
     let existing: Option<(String,)> = sqlx::query_as(
         "SELECT name FROM teams WHERE name = $1",
     )
     .bind(&req.name)
-    .fetch_optional(&mut *tx)
+    .fetch_optional(&pool)
     .await?;
 
     let team_id = if let Some(_) = existing {
@@ -60,7 +54,7 @@ pub async fn update_team(
             "SELECT id FROM teams WHERE name = $1",
         )
         .bind(&req.name)
-        .fetch_one(&mut *tx)
+        .fetch_one(&pool)
         .await?;
         id
     } else {
@@ -69,7 +63,7 @@ pub async fn update_team(
             "INSERT INTO teams (name) VALUES ($1) RETURNING id",
         )
         .bind(&req.name)
-        .fetch_one(&mut *tx)
+        .fetch_one(&pool)
         .await?;
         id
     };
@@ -77,25 +71,21 @@ pub async fn update_team(
     // Insert or update team_weekly_points
     sqlx::query(
         "INSERT INTO team_weekly_points (team_id, name, year, week, points) VALUES ($1, $2, $3, $4, $5)
-         ON CONFLICT (team_id, year, week) DO UPDATE SET points = $5",
+         ON CONFLICT (team_id, year, week) DO UPDATE SET points = $4",
     )
     .bind(team_id)
-    .bind(req.name.clone())
+    .bind(req.name)
     .bind(req.year)
     .bind(req.week)
     .bind(req.points)
-    .execute(&mut *tx)
+    .execute(&pool)
     .await?;
 
     // UPDATES THE WEEKLY LEADERBOARD
-    update_weekly_leaderboard(&mut tx, req.year, req.week).await?;
+    update_weekly_leaderboard(&pool, req.year, req.week).await?;
     // UPDATES THE WHOLE YEARLY LEADERBOARD FOR THAT YEAR
-    update_yearly_leaderboard(&mut tx, req.year).await?;
+    update_yearly_leaderboard(&pool, req.year).await?;
 
-    // Commit all changes atomically
-    tx.commit().await?;
-
-    // Now fetch the updated leaderboard after commit
     let team = get_weekly_leaderboard(&pool, req.year, req.week).await?;
 
     Ok((StatusCode::CREATED, Json(serde_json::json!({
@@ -130,31 +120,29 @@ pub async fn delete_team(
     Json(req): Json<GetTeamRequest>,
 ) -> Result<StatusCode> {
 
-let mut tx = pool.begin().await?;
-
     let affected_weeks = sqlx::query_as::<_, WeekYear>(
         "SELECT DISTINCT week, year
-         FROM team_weekly_points
-         WHERE name = $1"        
+        FROM team_weekly_points
+        WHERE name = $1"        
     )
     .bind(&req.name)
-    .fetch_all(&mut *tx)
+    .fetch_all(&pool)
     .await?;
 
     let affected_years = sqlx::query_as::<_, Year>(
         "SELECT DISTINCT year
-         FROM team_weekly_points
-         WHERE name = $1"        
+        FROM team_weekly_points
+        WHERE name = $1"        
     )
     .bind(&req.name)
-    .fetch_all(&mut *tx)
+    .fetch_all(&pool)
     .await?;
 
     let result = sqlx::query(
         "DELETE FROM teams WHERE name = $1",
     )
     .bind(&req.name)
-    .execute(&mut *tx)
+    .execute(&pool)
     .await?;
 
     if result.rows_affected() == 0 {
@@ -162,12 +150,11 @@ let mut tx = pool.begin().await?;
     }
 
     for row in affected_weeks {
-        update_weekly_leaderboard(&mut tx, row.year, row.week).await?;
+        update_weekly_leaderboard(&pool, row.year, row.week).await?;
     }
     for row in affected_years {
-        update_yearly_leaderboard(&mut tx, row.year).await?;
+        update_yearly_leaderboard(&pool, row.year).await?;
     }
-    tx.commit().await?;
 
     Ok(StatusCode::NO_CONTENT)
 }
