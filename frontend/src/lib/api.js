@@ -1,8 +1,6 @@
 import { supabase } from "./supabase";
 
-const API_BASE_URL = (
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api"
-).replace(/\/$/, "");
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "");
 
 async function request(path, options = {}) {
     let headers = {
@@ -52,7 +50,11 @@ function getIsoWeek(date) {
 }
 
 export async function getAllYearlyLeaderboards() {
-    return request(`/all/year`);
+    return request(`/all/years`);
+}
+
+export async function getAllWeeklyLeaderboards() {
+    return request(`/all/weeks`);
 }
 
 export async function getYearlyLeaderboard(year) {
@@ -90,5 +92,12 @@ export async function deleteTeam(payload) {
     return request("/teams", {
         method: "DELETE",
         body: JSON.stringify(nameSerialize),
+    });
+}
+
+export async function deleteTeamEntry(name, week, year) {
+    return request(`/teams/entry/${week}/${year}`, {
+        method: "DELETE",
+        body: JSON.stringify(),
     });
 }

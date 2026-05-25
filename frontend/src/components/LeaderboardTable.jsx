@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
-import useAuthUser from '../hooks/useAuthUser';
-import { deleteTeam } from '../lib/api';
+import { useAuthUser } from '../hooks/useAuthUser';
+import { deleteTeam, deleteTeamEntry } from '../lib/api';
 
 function LeaderboardTable({ title, rows, pointsField, scoreField, }) {
   const user = useAuthUser();
+
+    //{ user && (<td><button type="submit" onClick={() => deleteTeamEntry(row.name, row.week, row.year)} className="delete-team-btn"> delete entry </button></td>)}
+    //{ user && (<td><button type="submit" onClick={() => deleteTeam(row.name)} className="delete-team-btn"> delete team </button></td>)}
 
   return (
     <section className="card">
@@ -21,10 +24,9 @@ function LeaderboardTable({ title, rows, pointsField, scoreField, }) {
                     <>
                     <th>Quiz Score</th>
                     <th>Championship Points</th>
-                    </>) : 
+                    </>) : (<>
                     <th>Championship Score</th>
-                }
-               {user && (<th> </th>)}
+                </>)}
               </tr>
             </thead>
             <tbody>
@@ -33,10 +35,9 @@ function LeaderboardTable({ title, rows, pointsField, scoreField, }) {
                   <td>{row.rank}</td>
                   <td>{row.name}</td>
                   <td>{row[pointsField]}</td>
-                  { scoreField && <th>{row[scoreField]}</th> }
-                  { user && (
-                    <td><button type="submit" onClick={() => deleteTeam(row.name)} className="delete-team-btn"> delete team </button></td>
-                  )}
+                  { scoreField && (<>
+                      <th>{row[scoreField]}</th>
+                  </>)}
                 </tr>
               ))}
             </tbody>

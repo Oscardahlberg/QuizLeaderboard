@@ -25,3 +25,10 @@ pub struct YearLeaderboard {
 pub struct AllYearLeaderboard {
     pub year: i32,
 }
+
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
+pub struct AllWeekLeaderboard {
+    pub teams: i32,
+    pub week: i32,
+    pub year: i32,
+}

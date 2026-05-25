@@ -1,7 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { useEffect, useState } from 'react';
 
-export default function useAuthUser() {
+export function useAuthUser() {
   const [user, setUser] = useState(null);
 
   const checkUser = async () => {
@@ -26,6 +26,13 @@ export default function useAuthUser() {
     };
   }, []);
 
-    
   return user
+}
+
+export async function logoutAuthUser() {
+  try {
+    const { error } = await supabase.auth.signOut();
+  } catch (err) {
+    console.error('Logout error:', err);
+  }
 }

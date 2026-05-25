@@ -7,7 +7,7 @@ use sqlx::PgPool;
 
 use crate::{
     error::{Result},
-    models::leaderboard::{WeekLeaderboard, YearLeaderboard, AllYearLeaderboard},
+    models::leaderboard::{WeekLeaderboard, YearLeaderboard, AllYearLeaderboard, AllWeekLeaderboard},
     handlers::teams::{get_teams},
 };
 
@@ -204,6 +204,21 @@ pub async fn update_yearly_leaderboard(
 
     tx.commit().await?;
     Ok(())
+}
+
+pub async fn all_weekly_leaderboard(
+    State(pool): State<PgPool>,
+    ) -> Result<Json<Vec<AllWeekLeaderboard>>> {
+    let weekly_occurances = sqlx::query_as::<_, AllWeekLeaderboard>(
+        r#"SELECT COUNT(*)::int AS teams, week, year
+        FROM weekly_leaderboard
+        GROUP BY year, week
+        ORDER BY year DESC, week DESC
+        "#,
+    )
+    .fetch_all(&pool)
+    .await?;
+    Ok(Json(weekly_occurances))
 }
 
 pub async fn all_yearly_leaderboard(

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createOrUpdateTeam, getWeeklyLeaderboard } from '../lib/api';
-import useAuthUser from '../hooks/useAuthUser';
+import { useAuthUser } from '../hooks/useAuthUser';
 
 function TeamsPage() {
   const [loading, setLoading] = useState(false);
@@ -102,15 +102,6 @@ function TeamsPage() {
       console.error('Error creating team:', err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      setUser(null);
-    } catch (err) {
-      console.error('Logout error:', err);
     }
   };
 

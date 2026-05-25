@@ -166,3 +166,28 @@ pub async fn delete_team(
 
     Ok(StatusCode::NO_CONTENT)
 }
+
+pub async fn delete_team_entry(
+    State(pool): State<PgPool>,
+    Path((week, year)): Path<(i32, i32)>,
+    Json(req): Json<GetTeamRequest>,
+) -> Result<StatusCode> {
+    let mut tx = pool.begin().await?;
+
+    let result = sqlx::query(
+        "DELETE FROM team_weekly_points 
+        WHERE name = $1, week = $2, year = $3",
+    )
+    .bind(&req.name)
+    .bind(week)
+    .bind(year)
+    .execute(&mut *tx)
+    .await?;
+
+    tx.commit().await?;
+
+    update_weekly_leaderboard(&pool, year, week).await?;
+    update_yearly_leaderboard(&pool, year).await?;
+
+    Ok(StatusCode::NO_CONTENT)
+}

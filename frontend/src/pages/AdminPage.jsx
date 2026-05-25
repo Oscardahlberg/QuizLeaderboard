@@ -89,9 +89,9 @@ function AdminPage() {
   // Login form
   return (
     <div className="admin-login">
-      <h1>Admin Login</h1>
+      <h1 id="login-title" >Admin Login</h1>
       <form onSubmit={handleLogin}>
-        <div className="form-group">
+        <div className="login-form">
           <label htmlFor="email">Email:</label>
           <input
             id="email"
@@ -103,7 +103,7 @@ function AdminPage() {
             placeholder="Enter your email"
           />
         </div>
-        <div className="form-group">
+        <div className="login-form">
           <label htmlFor="password">Password:</label>
           <input
             id="password"

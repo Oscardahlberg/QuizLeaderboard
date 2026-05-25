@@ -40,6 +40,41 @@ body {
     color: #3262a8;
 }
 
+#weekly-rows {
+    cursor: pointer;
+}
+
+#weekly-title {
+    text-align: center;
+    font-style: italic;
+}
+
+#years-table td {
+    padding: 1rem 1.25rem;
+}
+
+.years-link {
+    display: block;
+    color: white;
+    text-decoration: none;
+    font-size: 1.1rem;
+}
+
+.years-link:hover {
+    color: #3262a8;
+}
+
+.weeks-link {
+    color: white;
+    text-decoration: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.weeks-link:hover {
+    color: #3262a8;
+}
+
 a {
     text-decoration: none;
     color: inherit;
@@ -143,25 +178,91 @@ footer div {
     gap: 14px;
 }
 
+header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#to-all-weekly-leaderboards {
+    text-align: center;
+    font-style: italic;
+    margin-bottom: 1rem;
+}
+#to-all-weekly-leaderboards:hover {
+    color: #3262a8;
+}
+
+/* AUTH LOGIN */
+.admin-login {
+    width: 100%;
+    max-width: 420px;
+    padding: 24px;
+    border-radius: 12px;
+    align-self: center;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(8px);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+#login-title {
+    text-align: center;
+}
+
+.login-btn {
+    display: block;
+    margin: 0 auto;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background: #82ff80;
+    color: black;
+    font-weight: 500;
+}
+
+.login-btn:hover {
+    background: #5bb05a;
+}
+
+.login-form {
+    margin-bottom: 1rem;
+}
+
+/* AUTH LOGIN */
+
 .nav-link,
-#logout-button {
+#logout-btn {
     background: none;
     border: none;
     color: #888;
     text-decoration: none;
     cursor: pointer;
     padding: 0;
-    font-size: inherit;
+    font-size: 14px;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
     transition: color 0.2s ease;
 }
 
 .nav-link:hover,
-#logout-button:hover {
+#logout-btn:hover {
     color: #ccc;
 }
 
 .nav-link.active {
     color: white;
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
 }
 
 /* Admin TeamsPage.jsx */
@@ -274,6 +375,25 @@ label {
 }
 
 .submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.delete-team-btn {
+    padding: 5px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background: #ff8080;
+    color: black;
+    font-weight: 500;
+}
+
+.delete-team-btn:hover {
+    background: #b51f1f;
+}
+
+.delete-team-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }

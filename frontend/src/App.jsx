@@ -1,47 +1,17 @@
 import { Navigate, NavLink, Route, Routes } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { useAuthUser, logoutAuthUser } from './hooks/useAuthUser';
 import LeaderboardsPage from './pages/LeaderboardsPage';
+import AllWeeklyLeaderboardsPage from './pages/AllWeeklyLeaderboardsPage';
+import WeekLeaderboardPage from './pages/WeekLeaderboardPage';
+import AllYearlyLeaderboardsPage from './pages/AllYearlyLeaderboardsPage';
+import YearLeaderboardPage from './pages/YearLeaderboardPage';
 import AdminPage from './pages/AdminPage';
 import TeamsPage from './pages/TeamsPage';
 import { supabase } from './lib/supabase';
 
 function App() {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    checkUser();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user || null);
-      }
-    );
-
-    return () => {
-      subscription?.unsubscribe();
-    };
-  }, []);
-
-  const checkUser = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
-    } catch (err) {
-      console.error('Error checking user:', err);
-    }
-  };
-  
-  const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        setError(error.message);
-      } else {
-        setUser(null);
-      }
-    } catch (err) {
-      console.error('Logout error:', err);
-    }
-  };
+  const user = useAuthUser();
 
   return (
     <div className="app-shell">
@@ -60,6 +30,10 @@ function App() {
       <main className="page-content">
         <Routes>
           <Route path="/" element={<LeaderboardsPage />} />
+          <Route path="/all/weeks" element={<AllWeeklyLeaderboardsPage />} />
+          <Route path="/year/:year/week/:week" element={<WeekLeaderboardPage />} />
+          <Route path="/all/years" element={<AllYearlyLeaderboardsPage />} />
+          <Route path="/year/:year" element={<YearLeaderboardPage />} />
           <Route path="/teams" element={<TeamsPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -75,7 +49,7 @@ function App() {
             >
             Teams
             </NavLink>
-            <button onClick={handleLogout} id="logout-button">
+            <button onClick={logoutAuthUser} id="logout-btn">
               Admin Logout
             </button>
             </div>

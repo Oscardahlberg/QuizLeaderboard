@@ -73,6 +73,10 @@ function LeaderboardsPage() {
             pointsField="points"
             scoreField="year_points"
           />
+            <NavLink id="to-all-weekly-leaderboards"
+            to="/all/weeks">
+            All weekly leaderboards
+            </NavLink>
         </>
       )}
     </div>
