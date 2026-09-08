@@ -6,7 +6,7 @@ pub struct WeekLeaderboard {
     pub rank: i32,
     pub team_id: Uuid,
     pub name: String,
-    pub points: f64,
+    pub points: f32,
     pub year_points: i32,
     pub week: i32,
     pub year: i32,
