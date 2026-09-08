@@ -103,12 +103,17 @@ pub async fn update_weekly_leaderboard(
     .bind(week)
     .execute(pool)
     .await?;
+    println!("delete week");
 
     let teams = get_teams(pool, year, week).await?;
+    println!("get teams");
     let mut rank = 1;
 
-    let mut prev_points: f64 = -1.0;
+    let mut prev_points: f32 = -1.0;
     for team in teams {
+        println!("for every team");
+        println!("name: {}", team.name);
+        println!("points: {}", team.points);
         if team.points == prev_points {
             rank = rank - 1;
         }
@@ -139,6 +144,7 @@ pub async fn update_weekly_leaderboard(
         prev_points = team.points;
         rank += 1;
     }
+    println!("done");
     Ok(())
 }
 

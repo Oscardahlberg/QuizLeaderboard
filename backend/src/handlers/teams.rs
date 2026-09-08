@@ -71,7 +71,7 @@ pub async fn update_team(
     // Insert or update team_weekly_points
     sqlx::query(
         "INSERT INTO team_weekly_points (team_id, name, year, week, points) VALUES ($1, $2, $3, $4, $5)
-         ON CONFLICT (team_id, year, week) DO UPDATE SET points = $4",
+         ON CONFLICT (team_id, year, week) DO UPDATE SET points = $5",
     )
     .bind(team_id)
     .bind(req.name)
