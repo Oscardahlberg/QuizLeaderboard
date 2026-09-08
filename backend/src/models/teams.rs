@@ -5,13 +5,13 @@ use uuid::Uuid;
 pub struct TeamWithPoints {
     pub team_id: Uuid,
     pub name: String,
-    pub points: i32,
+    pub points: f64,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct CreateTeamRequest {
     pub name: String,
-    pub points: i32,
+    pub points: f64,
     pub week: i32,
     pub year: i32,
 }

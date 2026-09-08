@@ -107,7 +107,11 @@ pub async fn update_weekly_leaderboard(
     let teams = get_teams(pool, year, week).await?;
     let mut rank = 1;
 
+    let mut prev_points: f64 = -1.0;
     for team in teams {
+        if team.points == prev_points {
+            rank = rank - 1;
+        }
         sqlx::query(
             r#"
             INSERT INTO weekly_leaderboard
@@ -132,10 +136,8 @@ pub async fn update_weekly_leaderboard(
         .execute(pool)
         .await?;
 
+        prev_points = team.points;
         rank += 1;
-        if rank > 10 {
-            break;            
-        }
     }
     Ok(())
 }

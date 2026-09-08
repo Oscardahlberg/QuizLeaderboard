@@ -69,7 +69,7 @@ function TeamsPage() {
     }
 
     if (!teamPoints || isNaN(teamPoints) || teamPoints < 0) {
-      setError('Points must be a valid number');
+      setError('Points must be a valid number over 0');
       setLoading(false);
       return;
     }
@@ -79,7 +79,7 @@ function TeamsPage() {
         week: parseInt(week),
         year: parseInt(year),
         name: teamName.trim(),
-        points: parseInt(teamPoints),
+        points: parseFloat(teamPoints),
       };
 
       const result = await createOrUpdateTeam(payload);
@@ -179,7 +179,7 @@ function TeamsPage() {
                 disabled={loading}
                 placeholder="Enter points"
                 min="0"
-                step="1"
+                step="0.1"
               />
             </div>
 

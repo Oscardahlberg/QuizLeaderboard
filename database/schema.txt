@@ -17,7 +17,7 @@ create table public.team_weekly_points (
     name text not null,
     year integer not null,
     week integer not null check (week between 1 and 53),
-    points integer not null default 0,
+    points float not null default 0,
     created_at timestamptz not null default now(),
 
     constraint unique_team_week unique (team_id, year, week)

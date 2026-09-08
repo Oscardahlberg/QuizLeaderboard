@@ -174,7 +174,7 @@ pub async fn delete_team_entry(
 ) -> Result<StatusCode> {
     let mut tx = pool.begin().await?;
 
-    let result = sqlx::query(
+    sqlx::query(
         "DELETE FROM team_weekly_points 
         WHERE name = $1, week = $2, year = $3",
     )
