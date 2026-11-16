@@ -6,7 +6,7 @@ Weekly championship points is based on the Formula 1 score list
 
 ## Published
 
-**Frontend**
+**Frontend** \n
 Netlify
 
 **Backend**
