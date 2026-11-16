@@ -103,17 +103,12 @@ pub async fn update_weekly_leaderboard(
     .bind(week)
     .execute(pool)
     .await?;
-    println!("delete week");
 
     let teams = get_teams(pool, year, week).await?;
-    println!("get teams");
     let mut rank = 1;
 
     let mut prev_points: f32 = -1.0;
     for team in teams {
-        println!("for every team");
-        println!("name: {}", team.name);
-        println!("points: {}", team.points);
         if team.points == prev_points {
             rank = rank - 1;
         }
@@ -144,7 +139,6 @@ pub async fn update_weekly_leaderboard(
         prev_points = team.points;
         rank += 1;
     }
-    println!("done");
     Ok(())
 }
 
@@ -165,8 +159,7 @@ pub async fn update_yearly_leaderboard(
     .execute(pool)
     .await?;
 
-    // get summed yearly points from weekly leaderboard
-    let rows = sqlx::query!(
+        /*
         r#"
         SELECT
             team_id,
@@ -174,6 +167,31 @@ pub async fn update_yearly_leaderboard(
             SUM(year_points)::int as year_points
         FROM weekly_leaderboard
         WHERE year = $1
+        GROUP BY team_id, name
+        ORDER BY year_points DESC
+        LIMIT 15
+        "#, */
+
+    // get summed yearly points from weekly leaderboard
+    let rows = sqlx::query!(
+        r#"
+        SELECT
+            team_id,
+            name,
+            SUM(year_points)::int AS year_points
+        FROM (
+            SELECT
+                team_id,
+                name,
+                year_points,
+                ROW_NUMBER() OVER (
+                    PARTITION BY team_id
+                    ORDER BY year_points DESC
+                ) AS rank
+            FROM weekly_leaderboard
+            WHERE year = $1
+        ) AS ranked
+        WHERE rank <= 10
         GROUP BY team_id, name
         ORDER BY year_points DESC
         LIMIT 15
