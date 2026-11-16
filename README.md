@@ -5,12 +5,9 @@ Every team is then ranked weekly and receives championship points for the yearly
 Weekly championship points is based on the Formula 1 score list
 
 ## Published
-
-**Frontend** \n
+###### Frontend
 Netlify
-
-**Backend**
+###### Backend
 Render
-
-**Database**
+###### Database
 Supabase
